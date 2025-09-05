@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koog AI Assistant</title>
+    
+    <!-- Prevent theme flash - inline script before any CSS -->
+    <script>
+    (function() {
+      try {
+        const stored = localStorage.getItem('theme'); // 'light' | 'dark' | 'system' | null
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const wantDark = stored === 'dark' || (stored !== 'light' && systemDark);
+        if (wantDark) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+        // Set data-theme for CSS variables scoping
+        document.documentElement.setAttribute('data-theme', wantDark ? 'dark' : 'light');
+      } catch (_) {}
+    })();
+    </script>
+    
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/dark-mode.css">
+</head>
+<body>
+    <div class="theme-toggle">
+        <div class="theme-toggle-container">
+            <label for="themeSelect" class="theme-label">Theme:</label>
+            <select id="themeSelect" class="theme-select">
+                <option value="system">🌐 System</option>
+                <option value="light">☀️ Light</option>
+                <option value="dark">🌙 Dark</option>
+            </select>
+        </div>
+    </div>
+    <div class="container">
+        <header>
+            <h1>🤖 Koog AI Assistant</h1>
+            <p>Intelligent AI Assistant with System Monitoring & Performance Analytics</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                
+                <div class="section">
+                    <h3>🤖 Model Management</h3>
+                    
+                    <!-- Model List with Radio Buttons -->
+                    <div class="model-list-container">
+                        <h4>Available Models</h4>
+                        <div id="modelList" class="model-list">
+                            <div class="loading">Loading models...</div>
+                        </div>
+                        <button onclick="refreshModels()" class="btn-secondary btn-small">🔄 Refresh</button>
+                    </div>
+                    
+                    
+
+                    
+                    <!-- Current Model Display -->
+                    <div class="current-model-section">
+                        <h4>Current Model</h4>
+                        <div id="currentModelDisplay" class="current-model-display">
+                            <span class="model-name">Loading...</span>
+                            <span class="model-status"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>📊 Analytics</h3>
+                    <div class="analytics-grid">
+                        <button onclick="getStats()" class="btn-secondary btn-analytics">
+                            <span class="btn-icon">📈</span>
+                            <span class="btn-text">Statistics</span>
+                        </button>
+                        <button onclick="getAnalytics()" class="btn-secondary btn-analytics">
+                            <span class="btn-icon">📊</span>
+                            <span class="btn-text">Analytics</span>
+                        </button>
+                        <button onclick="exportConversation()" class="btn-secondary btn-analytics">
+                            <span class="btn-icon">💾</span>
+                            <span class="btn-text">Export</span>
+                        </button>
+                        <button onclick="resetSession()" class="btn-warning btn-analytics">
+                            <span class="btn-icon">🔄</span>
+                            <span class="btn-text">Reset Session</span>
+                        </button>
+                    </div>
+                    <div class="analytics-display">
+                        <div id="analyticsStatus" class="analytics-status"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>🔧 System Monitoring</h3>
+                    <div class="monitoring-grid">
+                        <button onclick="getSystemMetrics()" class="btn-secondary btn-monitoring">
+                            <span class="btn-icon">💻</span>
+                            <span class="btn-text">System Metrics</span>
+                        </button>
+                        <button onclick="getPerformanceMetrics()" class="btn-secondary btn-monitoring">
+                            <span class="btn-icon">⚡</span>
+                            <span class="btn-text">Performance</span>
+                        </button>
+                        <button onclick="getSystemHealth()" class="btn-secondary btn-monitoring">
+                            <span class="btn-icon">🏥</span>
+                            <span class="btn-text">Health Check</span>
+                        </button>
+                    </div>
+                    <div class="monitoring-display">
+                        <div id="systemStatus" class="system-status"></div>
+                        <div id="healthIndicator" class="health-indicator">
+                            <span class="health-dot"></span>
+                            <span class="health-text">System Status</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>📁 File Operations</h3>
+                    <div class="file-operations">
+                        <div class="file-section">
+                            <h4>📖 Read File</h4>
+                            <div class="input-group">
+                                <input type="text" id="filenameInput" placeholder="Enter filename..." />
+                                <button onclick="readFile()" class="btn-secondary btn-file">
+                                    <span class="btn-icon">👁️</span>
+                                    <span class="btn-text">Read</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="file-section">
+                            <h4>✏️ Write File</h4>
+                            <div class="input-group">
+                                <input type="text" id="writeFilenameInput" placeholder="Enter filename..." />
+                            </div>
+                            <div class="input-group">
+                                <textarea id="contentInput" placeholder="Enter file content..." rows="3"></textarea>
+                            </div>
+                            <button onclick="writeFile()" class="btn-secondary btn-file">
+                                <span class="btn-icon">💾</span>
+                                <span class="btn-text">Write</span>
+                            </button>
+                        </div>
+                        
+                        <div class="file-section">
+                            <h4>📋 List Files</h4>
+                            <button onclick="listFiles()" class="btn-secondary btn-file">
+                                <span class="btn-icon">📁</span>
+                                <span class="btn-text">List Files</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="file-display">
+                        <div id="fileStatus" class="file-status"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-area">
+                <div class="chat-header">
+                    <h3>💬 Chat</h3>
+                    <div class="memory-status">
+                        <span id="memoryStatus">Memory: 0 messages</span>
+                        <button onclick="clearMemory()" class="btn-small">Clear</button>
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <div class="active-llm-indicator">
+                        <div class="llm-info">
+                            <span class="llm-label">Active LLM:</span>
+                            <span id="activeLLMName" class="llm-name">Loading...</span>
+                        </div>
+                        <div class="llm-timestamp">
+                            <span id="llmTimestamp" class="timestamp">--:--:--</span>
+                        </div>
+                    </div>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <div class="input-group">
+                            <input type="text" id="messageInput" placeholder="Type your message..." />
+                            <button onclick="sendMessage()" class="btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/script.js"></script>
+</body>
+</html>
+
