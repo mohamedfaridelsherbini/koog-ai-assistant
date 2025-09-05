@@ -109,6 +109,9 @@ class SimpleWebServer(private val dockerAgent: DockerAIAgent) {
         server.createContext("/", StaticFileHandler())
         server.createContext("/static", StaticFileHandler())
         
+        // Health check endpoint
+        server.createContext("/health", HealthHandler(dockerAgent))
+        
         // API endpoints
         server.createContext("/api/chat", ChatHandler(dockerAgent))
         server.createContext("/api/memory", MemoryHandler(dockerAgent))
