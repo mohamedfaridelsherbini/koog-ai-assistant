@@ -1,21 +1,17 @@
-# 🐳 Docker AI Agent
+# 🤖 Koog AI Assistant
 
-A powerful AI chat system running entirely in Docker with web interface and command-line support.
+A modern, production-ready AI chat application built with clean architecture, featuring comprehensive model management and a beautiful web interface.
 
 ## ✨ Features
 
-- 🤖 **AI Chat** - Powered by Llama 3.2 running in Docker
-- 🌐 **Web Interface** - Beautiful, responsive web UI
-- 💬 **Command Line** - Interactive terminal chat
-- 🧠 **Memory** - Conversation context awareness
-- 📁 **File Operations** - Read, write, list, and save files
-- 📥 **Model Management** - Pull, delete, and manage AI models
-- 🔄 **Multi-Model Switching** - Switch between models during conversations
-- 📊 **Advanced Conversation Features** - Analytics, export/import, and session management
-- 🔧 **System Monitoring** - Real-time CPU, memory, disk, and network metrics
-- ⚡ **Performance Analytics** - Response times, throughput, error rates, and optimization recommendations
-- 🏥 **Health Monitoring** - Comprehensive system health checks with actionable recommendations
-- 🔧 **Easy Setup** - One-command launcher
+- 🤖 **AI Chat** - Powered by Ollama with multiple model support
+- 🌐 **Modern Web Interface** - Beautiful dark theme with purple accents
+- 📦 **Model Management** - Download, delete, switch, and manage AI models
+- 🎨 **Syntax Highlighting** - Code blocks with Prism.js support
+- 🧠 **Conversation Memory** - Context-aware conversations
+- 🏗️ **Clean Architecture** - Domain-driven design with proper separation of concerns
+- 📱 **Responsive Design** - Works on desktop and mobile devices
+- 🔧 **Easy Setup** - One-command launcher with Docker integration
 
 ## 🚀 Quick Start
 
@@ -25,22 +21,15 @@ A powerful AI chat system running entirely in Docker with web interface and comm
 
 ### Easy Run (Recommended)
 ```bash
-./run.sh
+./start-local.sh
 ```
 
 This will:
 1. ✅ Check Docker is running
 2. 🐳 Start Ollama container if needed
 3. 📥 Download AI model if needed
-4. 🔨 Build the application if needed
-5. 🎯 Let you choose your mode:
-   - Web Interface (Browser)
-   - Command Line Chat
-   - Demo Mode
-   - Model Management Demo
-   - Multi-Model Switching Demo
-   - Advanced Conversation Demo
-   - System Monitoring Demo
+4. 🔨 Build the application
+5. 🌐 Start the web server on `http://localhost:8080`
 
 ### Manual Setup
 
@@ -51,131 +40,111 @@ docker run -d --name ollama -p 11434:11434 ollama/ollama
 
 2. **Download the AI model:**
 ```bash
-docker exec ollama ollama pull llama3.2:3b
+docker exec ollama ollama pull llama3.1:8b
 ```
 
 3. **Build the application:**
 ```bash
-./gradlew :app:jar
+./gradlew build
 ```
 
 4. **Run the application:**
 ```bash
-# Web Interface
-java -jar app/build/libs/app.jar --web
-
-# Command Line Chat
 java -jar app/build/libs/app.jar
 ```
 
-## 🎯 Usage Modes
+## 🎯 Usage
 
-### 1. Web Interface
+### Web Interface
 - Open browser to `http://localhost:8080`
-- Beautiful chat interface
-- File operations sidebar
-- Memory management
-- Real-time responses
+- Modern chat interface with dark theme
+- Model management modal
+- Syntax highlighting for code blocks
+- Real-time responses with proper formatting
 
-### 2. Command Line Chat
-- Interactive terminal interface
-- Commands: `help`, `clear`, `memory`, `save`, `read`, `write`, `list`
-- Type `exit` to quit
+### Model Management
+- Click "📦 Models" button to open model management
+- Download new models from the available list
+- Switch between downloaded models
+- Delete unused models to free up space
 
-### 3. Demo Mode
-- Automated demonstration
-- Tests all features
-- Shows API endpoints
+## 🏗️ Architecture
 
-### 4. Model Management Demo
-- Demonstrates model pulling and deletion
-- Shows model management API endpoints
-- Interactive model testing
+The application follows clean architecture principles with clear separation of concerns:
 
-### 5. Multi-Model Switching Demo
-- Demonstrates switching between models during runtime
-- Shows chat responses from different models
-- Tests error handling for non-existent models
-
-### 6. Advanced Conversation Demo
-- Demonstrates conversation analytics and statistics
-- Shows multi-format conversation export (JSON/TXT/CSV)
-- Tests session reset and management features
-
-### 7. System Monitoring Demo
-- Demonstrates real-time system monitoring capabilities
-- Shows performance metrics and health checks
-- Tests system optimization recommendations
-
-## 🔧 Available Commands
-
-### Chat Commands
-- `help` - Show available commands
-- `exit` / `quit` - End the session
-- `clear` - Clear conversation memory
-- `memory` - Show memory status
-
-### File Operations
-- `list [directory]` - List files
-- `read <filename>` - Read file content
-- `write <filename> <content>` - Write to file
-- `save [filename]` - Save conversation
-
-### System Commands
-- `models` - List available AI models
-- `health` - Check system health
-- `current` - Show current model
-
-### Model Management Commands
-- `pull <model_name>` - Download a new model
-- `delete <model_name>` - Delete a model
-- `switch <model_name>` - Switch to a different model
-
-### Advanced Conversation Commands
-- `stats` - Show conversation statistics
-- `export [format]` - Export conversation (json/txt/csv)
-- `analytics` - Show detailed conversation analytics
-- `reset` - Reset session and clear all data
-- `monitor` - Show system monitoring dashboard
-- `performance` - Show performance metrics
-- `health-check` - Comprehensive system health check
+```
+app/src/main/kotlin/dev/craftmind/agent/
+├── application/           # Application layer
+│   ├── dto/              # Data Transfer Objects
+│   └── service/          # Application services
+├── config/               # Configuration and dependency injection
+├── domain/               # Domain layer
+│   ├── model/            # Domain models
+│   ├── repository/       # Repository interfaces
+│   └── service/          # Domain services
+├── infrastructure/       # Infrastructure layer
+│   ├── ollama/           # Ollama API client
+│   └── repository/       # Repository implementations
+├── presentation/         # Presentation layer
+│   └── web/              # Web interface
+│       ├── handler/      # HTTP handlers
+│       └── WebServer.kt  # Web server setup
+└── Main.kt               # Application entry point
+```
 
 ## 🌐 API Endpoints
 
-When running in web mode, these endpoints are available:
-
 - `POST /api/chat` - Send message to AI
-- `GET /api/memory` - Get memory status
-- `POST /api/memory/clear` - Clear memory
-- `POST /api/files/operation` - File operations
-- `GET /api/health` - Health check
 - `GET /api/models` - List available models
-- `POST /api/models/pull` - Pull a new model
+- `GET /api/models/all` - Get detailed model information
+- `POST /api/models/pull` - Download a new model
 - `POST /api/models/delete` - Delete a model
 - `POST /api/models/switch` - Switch to a different model
-- `GET /api/models/current` - Get current model
-- `GET /api/conversation/stats` - Get conversation statistics
-- `POST /api/conversation/export` - Export conversation
-- `GET /api/conversation/analytics` - Get conversation analytics
-- `POST /api/conversation/reset` - Reset session
-- `GET /api/system/metrics` - Get system metrics (CPU, memory, disk, network)
-- `GET /api/system/performance` - Get performance metrics (response times, throughput, error rates)
-- `GET /api/system/health` - Get comprehensive system health check
 
-## 📁 Project Structure
+## 🎨 Frontend Architecture
+
+The frontend is built with modular JavaScript and CSS:
 
 ```
-koog-agent-deep-research/
-├── app/
-│   ├── src/main/kotlin/dev/craftmind/agent/
-│   │   ├── Main.kt                 # Main application
-│   │   ├── SimpleWebServer.kt      # Web server
-│   │   ├── DockerOllamaExecutor.kt # Ollama API client
-│   │   └── DockerAIAgent.kt        # AI agent logic
-│   └── src/main/resources/static/  # Web interface files
-├── run.sh                          # Easy launcher
-├── demo_web.sh                     # Web demo script
-└── README.md                       # This file
+app/src/main/resources/static/
+├── css/
+│   ├── base.css          # Base styles and variables
+│   ├── components.css    # Component styles
+│   ├── layout.css        # Layout styles
+│   ├── syntax.css        # Syntax highlighting
+│   └── themes.css        # Theme styles
+├── js/
+│   ├── app.js            # Main application logic
+│   ├── chat.js           # Chat functionality
+│   ├── config.js         # Configuration
+│   ├── models.js         # Model management
+│   └── theme.js          # Theme switching
+└── index.html            # Main HTML file
+```
+
+## 🔧 Configuration
+
+### Change AI Model
+Edit `app/src/main/kotlin/dev/craftmind/agent/config/ApplicationConfig.kt`:
+```kotlin
+ollama = OllamaConfig(
+    defaultModel = "your-model-name"
+)
+```
+
+### Change Port
+Edit `app/src/main/kotlin/dev/craftmind/agent/Main.kt`:
+```kotlin
+val config = ApplicationConfig(
+    server = ServerConfig(port = 8081), // Change port number
+    ollama = OllamaConfig()
+)
+```
+
+### Modify System Prompt
+Edit the `systemPrompt` parameter in `ConversationService.kt`:
+```kotlin
+private val systemPrompt = "Your custom system prompt here"
 ```
 
 ## 🔍 Troubleshooting
@@ -187,47 +156,57 @@ koog-agent-deep-research/
 
 ### Model Issues
 - List models: `docker exec ollama ollama list`
-- Pull model: `docker exec ollama ollama pull llama3.2:3b`
+- Pull model: `docker exec ollama ollama pull llama3.1:8b`
 
 ### Port Issues
 - Check if port 8080 is free: `lsof -i :8080`
-- Kill process: `kill -9 <PID>`
+- Kill process: `pkill -f "java.*app.jar"`
 
 ### Build Issues
-- Clean build: `./gradlew clean :app:jar`
+- Clean build: `./gradlew clean build`
 - Check Java version: `java -version`
-
-## 🎨 Customization
-
-### Change AI Model
-Edit `app/src/main/kotlin/dev/craftmind/agent/Main.kt`:
-```kotlin
-model = "your-model-name"
-```
-
-### Change Port
-Edit `app/src/main/kotlin/dev/craftmind/agent/Main.kt`:
-```kotlin
-webServer.start(8081) // Change port number
-```
-
-### Modify System Prompt
-Edit the `systemPrompt` parameter in `Main.kt` to customize AI behavior.
 
 ## 📊 Performance
 
-- **Memory**: Keeps last 10 messages for context
+- **Memory**: Keeps conversation history for context
 - **Timeout**: 5 minutes for complex responses
-- **Retries**: 3 attempts with exponential backoff
 - **Concurrent**: Single-user system (can be extended)
+- **Caching**: In-memory conversation storage
+
+## 🎨 Themes
+
+The application supports both light and dark themes:
+
+- **Dark Theme**: Default with purple accents (`#33005d`)
+- **Light Theme**: Light gray background with subtle styling
+- **Toggle**: Click the moon icon in the header to switch themes
+
+## 🚀 Development
+
+### Building
+```bash
+./gradlew build
+```
+
+### Running Tests
+```bash
+./gradlew test
+```
+
+### Clean Build
+```bash
+./gradlew clean build
+```
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
 4. Test thoroughly
-5. Submit a pull request
+5. Commit your changes: `git commit -m 'Add amazing feature'`
+6. Push to the branch: `git push origin feature/amazing-feature`
+7. Submit a pull request
 
 ## 📄 License
 
@@ -235,5 +214,4 @@ This project is open source and available under the MIT License.
 
 ---
 
-**Happy chatting with your Docker AI Agent! 🚀**
-
+**Happy chatting with Koog AI! 🚀**
