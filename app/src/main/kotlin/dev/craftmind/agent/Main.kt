@@ -1266,12 +1266,7 @@ class DockerAIAgent(
 }
 
 fun main(args: Array<String>) = runBlocking {
-    // Check if web mode is requested
-    if (args.isNotEmpty() && args[0] == "--web") {
-        startWebServer()
-    } else {
-        startInteractiveChat()
-    }
+    startWebServer()
 }
 
 fun runBlocking(block: suspend () -> Unit) {
