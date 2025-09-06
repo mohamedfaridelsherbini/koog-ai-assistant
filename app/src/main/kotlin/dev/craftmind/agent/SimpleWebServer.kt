@@ -112,6 +112,11 @@ class SimpleWebServer(private val dockerAgent: DockerAIAgent) {
         // Health check endpoint
         server.createContext("/health", HealthHandler(dockerAgent))
         
+        // Enhanced API endpoints
+        server.createContext("/api/conversations", ConversationHandler())
+        server.createContext("/api/settings", SettingsHandler())
+        server.createContext("/api/export", ExportHandler())
+        
         // API endpoints
         server.createContext("/api/chat", ChatHandler(dockerAgent))
         server.createContext("/api/memory", MemoryHandler(dockerAgent))
@@ -651,6 +656,118 @@ class SimpleWebServer(private val dockerAgent: DockerAIAgent) {
         exchange.sendResponseHeaders(statusCode, 0)
         exchange.responseBody.use { os ->
             os.write(Json.encodeToString(errorResponse).toByteArray())
+        }
+    }
+}
+
+// Enhanced API Handlers
+
+@Serializable
+data class ConversationData(
+    val id: String,
+    val title: String,
+    val preview: String,
+    val timestamp: String,
+    val messageCount: Int,
+    val messages: List<MessageData>
+)
+
+@Serializable
+data class MessageData(
+    val type: String,
+    val content: String,
+    val timestamp: String
+)
+
+@Serializable
+data class SettingsData(
+    val autoSave: Boolean,
+    val showTimestamps: Boolean,
+    val maxMemorySize: Int,
+    val responseSpeed: String
+)
+
+class ConversationHandler : HttpHandler {
+    override fun handle(exchange: HttpExchange) {
+        when (exchange.requestMethod) {
+            "GET" -> {
+                // Return conversation list (placeholder - in real implementation, load from database)
+                val conversations = listOf<ConversationData>()
+                val response = mapOf("conversations" to conversations)
+                exchange.responseHeaders.set("Content-Type", "application/json")
+                exchange.sendResponseHeaders(200, 0)
+                exchange.responseBody.use { os ->
+                    os.write(Json.encodeToString(response).toByteArray())
+                }
+            }
+            "POST" -> {
+                // Save conversation (placeholder)
+                val response = mapOf("success" to true, "message" to "Conversation saved")
+                exchange.responseHeaders.set("Content-Type", "application/json")
+                exchange.sendResponseHeaders(200, 0)
+                exchange.responseBody.use { os ->
+                    os.write(Json.encodeToString(response).toByteArray())
+                }
+            }
+            else -> {
+                exchange.sendResponseHeaders(405, 0)
+            }
+        }
+    }
+}
+
+class SettingsHandler : HttpHandler {
+    override fun handle(exchange: HttpExchange) {
+        when (exchange.requestMethod) {
+            "GET" -> {
+                // Return default settings
+                val settings = SettingsData(
+                    autoSave = true,
+                    showTimestamps = true,
+                    maxMemorySize = 25,
+                    responseSpeed = "balanced"
+                )
+                exchange.responseHeaders.set("Content-Type", "application/json")
+                exchange.sendResponseHeaders(200, 0)
+                exchange.responseBody.use { os ->
+                    os.write(Json.encodeToString(settings).toByteArray())
+                }
+            }
+            "POST" -> {
+                // Save settings (placeholder)
+                val response = mapOf("success" to true, "message" to "Settings saved")
+                exchange.responseHeaders.set("Content-Type", "application/json")
+                exchange.sendResponseHeaders(200, 0)
+                exchange.responseBody.use { os ->
+                    os.write(Json.encodeToString(response).toByteArray())
+                }
+            }
+            else -> {
+                exchange.sendResponseHeaders(405, 0)
+            }
+        }
+    }
+}
+
+class ExportHandler : HttpHandler {
+    override fun handle(exchange: HttpExchange) {
+        when (exchange.requestMethod) {
+            "GET" -> {
+                val format = exchange.requestURI.query?.split("=")?.getOrNull(1) ?: "json"
+                val response = when (format) {
+                    "txt" -> "Text export not implemented yet"
+                    "csv" -> "CSV export not implemented yet"
+                    else -> "JSON export not implemented yet"
+                }
+                exchange.responseHeaders.set("Content-Type", "text/plain")
+                exchange.sendResponseHeaders(200, 0)
+                exchange.responseBody.use { os ->
+                    os.write(response.toByteArray())
+                }
+            }
+            else -> {
+                exchange.sendResponseHeaders(405, 0)
+            }
         }
     }
 }

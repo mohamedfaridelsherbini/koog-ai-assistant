@@ -69,7 +69,30 @@
                 </div>
                 
                 <div class="section">
-                    <h3>📊 Analytics</h3>
+                    <h3>💬 Conversation History</h3>
+                    <div class="conversation-controls">
+                        <button onclick="loadConversationHistory()" class="btn-secondary btn-small">
+                            <span class="btn-icon">📚</span>
+                            <span class="btn-text">Load History</span>
+                        </button>
+                        <button onclick="saveConversation()" class="btn-secondary btn-small">
+                            <span class="btn-icon">💾</span>
+                            <span class="btn-text">Save Current</span>
+                        </button>
+                        <button onclick="clearConversationHistory()" class="btn-warning btn-small">
+                            <span class="btn-icon">🗑️</span>
+                            <span class="btn-text">Clear All</span>
+                        </button>
+                    </div>
+                    <div class="conversation-list">
+                        <div id="conversationHistory" class="conversation-history">
+                            <div class="no-conversations">No saved conversations</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>📊 Analytics & Export</h3>
                     <div class="analytics-grid">
                         <button onclick="getStats()" class="btn-secondary btn-analytics">
                             <span class="btn-icon">📈</span>
@@ -80,8 +103,16 @@
                             <span class="btn-text">Analytics</span>
                         </button>
                         <button onclick="exportConversation()" class="btn-secondary btn-analytics">
-                            <span class="btn-icon">💾</span>
-                            <span class="btn-text">Export</span>
+                            <span class="btn-icon">📄</span>
+                            <span class="btn-text">Export JSON</span>
+                        </button>
+                        <button onclick="exportConversationTXT()" class="btn-secondary btn-analytics">
+                            <span class="btn-icon">📝</span>
+                            <span class="btn-text">Export TXT</span>
+                        </button>
+                        <button onclick="exportConversationCSV()" class="btn-secondary btn-analytics">
+                            <span class="btn-icon">📊</span>
+                            <span class="btn-text">Export CSV</span>
                         </button>
                         <button onclick="resetSession()" class="btn-warning btn-analytics">
                             <span class="btn-icon">🔄</span>
@@ -114,6 +145,37 @@
                         <div id="healthIndicator" class="health-indicator">
                             <span class="health-dot"></span>
                             <span class="health-text">System Status</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>⚙️ Settings</h3>
+                    <div class="settings-panel">
+                        <div class="setting-item">
+                            <label for="autoSave">Auto-save conversations:</label>
+                            <input type="checkbox" id="autoSave" checked>
+                        </div>
+                        <div class="setting-item">
+                            <label for="showTimestamps">Show timestamps:</label>
+                            <input type="checkbox" id="showTimestamps" checked>
+                        </div>
+                        <div class="setting-item">
+                            <label for="maxMemorySize">Max memory size:</label>
+                            <select id="maxMemorySize">
+                                <option value="10">10 messages</option>
+                                <option value="25" selected>25 messages</option>
+                                <option value="50">50 messages</option>
+                                <option value="100">100 messages</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="responseSpeed">Response speed:</label>
+                            <select id="responseSpeed">
+                                <option value="fast">Fast (1-3s)</option>
+                                <option value="balanced" selected>Balanced (3-5s)</option>
+                                <option value="thorough">Thorough (5-10s)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -153,6 +215,17 @@
                                 <span class="btn-text">List Files</span>
                             </button>
                         </div>
+                        
+                        <div class="file-section">
+                            <h4>📤 Upload File</h4>
+                            <div class="input-group">
+                                <input type="file" id="fileUpload" accept=".txt,.md,.json,.csv,.py,.js,.html,.css" />
+                                <button onclick="uploadFile()" class="btn-secondary btn-file">
+                                    <span class="btn-icon">📤</span>
+                                    <span class="btn-text">Upload</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="file-display">
                         <div id="fileStatus" class="file-status"></div>
@@ -163,9 +236,16 @@
             <div class="chat-area">
                 <div class="chat-header">
                     <h3>💬 Chat</h3>
-                    <div class="memory-status">
-                        <span id="memoryStatus">Memory: 0 messages</span>
-                        <button onclick="clearMemory()" class="btn-small">Clear</button>
+                    <div class="chat-controls">
+                        <div class="memory-status">
+                            <span id="memoryStatus">Memory: 0 messages</span>
+                            <button onclick="clearMemory()" class="btn-small">Clear</button>
+                        </div>
+                        <div class="chat-actions">
+                            <button onclick="scrollToTop()" class="btn-small" title="Scroll to top">⬆️</button>
+                            <button onclick="scrollToBottom()" class="btn-small" title="Scroll to bottom">⬇️</button>
+                            <button onclick="toggleAutoScroll()" class="btn-small" id="autoScrollBtn" title="Toggle auto-scroll">📌</button>
+                        </div>
                     </div>
                 </div>
                 <div class="chat-container">
@@ -177,12 +257,20 @@
                         <div class="llm-timestamp">
                             <span id="llmTimestamp" class="timestamp">--:--:--</span>
                         </div>
+                        <div class="llm-status">
+                            <span id="llmStatus" class="status-indicator">🟢 Ready</span>
+                        </div>
                     </div>
                     <div id="chatMessages" class="chat-messages"></div>
                     <div class="chat-input-container">
                         <div class="input-group">
-                            <input type="text" id="messageInput" placeholder="Type your message..." />
-                            <button onclick="sendMessage()" class="btn-primary">Send</button>
+                            <input type="text" id="messageInput" placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)" />
+                            <button onclick="sendMessage()" class="btn-primary" id="sendBtn">Send</button>
+                        </div>
+                        <div class="input-options">
+                            <button onclick="insertCodeBlock()" class="btn-small" title="Insert code block">📝</button>
+                            <button onclick="insertTable()" class="btn-small" title="Insert table">📊</button>
+                            <button onclick="clearInput()" class="btn-small" title="Clear input">🗑️</button>
                         </div>
                     </div>
                 </div>

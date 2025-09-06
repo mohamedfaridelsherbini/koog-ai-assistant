@@ -2,6 +2,14 @@
 let currentModel = 'Unknown';
 let memorySize = 0;
 let availableModels = [];
+let conversationHistory = [];
+let autoScroll = true;
+let settings = {
+    autoSave: true,
+    showTimestamps: true,
+    maxMemorySize: 25,
+    responseSpeed: 'balanced'
+};
 
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
@@ -1212,4 +1220,384 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Theme initialization is now handled in the main DOMContentLoaded event listener above
+
+// Enhanced Features Implementation
+
+// Conversation History Management
+function loadConversationHistory() {
+    const historyDiv = document.getElementById('conversationHistory');
+    historyDiv.innerHTML = '<div class="loading">Loading conversation history...</div>';
+    
+    // Load from localStorage
+    const saved = localStorage.getItem('koogConversations');
+    if (saved) {
+        conversationHistory = JSON.parse(saved);
+        displayConversationHistory();
+    } else {
+        historyDiv.innerHTML = '<div class="no-conversations">No saved conversations</div>';
+    }
+}
+
+function displayConversationHistory() {
+    const historyDiv = document.getElementById('conversationHistory');
+    
+    if (conversationHistory.length === 0) {
+        historyDiv.innerHTML = '<div class="no-conversations">No saved conversations</div>';
+        return;
+    }
+    
+    historyDiv.innerHTML = conversationHistory.map((conv, index) => `
+        <div class="conversation-item" onclick="loadConversation(${index})">
+            <div class="conversation-title">${conv.title}</div>
+            <div class="conversation-preview">${conv.preview}</div>
+            <div class="conversation-meta">${conv.timestamp} • ${conv.messageCount} messages</div>
+        </div>
+    `).join('');
+}
+
+function saveConversation() {
+    const messages = document.querySelectorAll('.message');
+    if (messages.length === 0) {
+        addMessage('system', 'No conversation to save');
+        return;
+    }
+    
+    const conversation = {
+        id: Date.now(),
+        title: generateConversationTitle(),
+        preview: getConversationPreview(),
+        timestamp: new Date().toLocaleString(),
+        messageCount: messages.length,
+        messages: Array.from(messages).map(msg => ({
+            type: msg.classList.contains('user') ? 'user' : 
+                  msg.classList.contains('assistant') ? 'assistant' : 'system',
+            content: msg.querySelector('div').textContent,
+            timestamp: msg.querySelector('.timestamp').textContent
+        }))
+    };
+    
+    conversationHistory.unshift(conversation);
+    
+    // Keep only last 50 conversations
+    if (conversationHistory.length > 50) {
+        conversationHistory = conversationHistory.slice(0, 50);
+    }
+    
+    localStorage.setItem('koogConversations', JSON.stringify(conversationHistory));
+    displayConversationHistory();
+    addMessage('system', 'Conversation saved successfully');
+}
+
+function generateConversationTitle() {
+    const firstUserMessage = document.querySelector('.message.user div');
+    if (firstUserMessage) {
+        const text = firstUserMessage.textContent;
+        return text.length > 50 ? text.substring(0, 50) + '...' : text;
+    }
+    return 'New Conversation';
+}
+
+function getConversationPreview() {
+    const messages = document.querySelectorAll('.message');
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage) {
+        const text = lastMessage.querySelector('div').textContent;
+        return text.length > 100 ? text.substring(0, 100) + '...' : text;
+    }
+    return 'No messages';
+}
+
+function loadConversation(index) {
+    const conversation = conversationHistory[index];
+    if (!conversation) return;
+    
+    // Clear current chat
+    document.getElementById('chatMessages').innerHTML = '';
+    
+    // Load conversation messages
+    conversation.messages.forEach(msg => {
+        addMessage(msg.type, msg.content);
+    });
+    
+    addMessage('system', `Loaded conversation: ${conversation.title}`);
+}
+
+function clearConversationHistory() {
+    if (confirm('Are you sure you want to clear all conversation history?')) {
+        conversationHistory = [];
+        localStorage.removeItem('koogConversations');
+        displayConversationHistory();
+        addMessage('system', 'Conversation history cleared');
+    }
+}
+
+// Enhanced Export Functions
+function exportConversationTXT() {
+    const messages = document.querySelectorAll('.message');
+    if (messages.length === 0) {
+        addMessage('system', 'No conversation to export');
+        return;
+    }
+    
+    let content = `Koog AI Assistant - Conversation Export\n`;
+    content += `Generated: ${new Date().toLocaleString()}\n`;
+    content += `Model: ${currentModel}\n`;
+    content += `Messages: ${messages.length}\n\n`;
+    content += '='.repeat(50) + '\n\n';
+    
+    messages.forEach(msg => {
+        const type = msg.classList.contains('user') ? 'User' : 
+                    msg.classList.contains('assistant') ? 'Assistant' : 'System';
+        const timestamp = msg.querySelector('.timestamp').textContent;
+        const text = msg.querySelector('div').textContent;
+        
+        content += `[${timestamp}] ${type}:\n`;
+        content += `${text}\n\n`;
+    });
+    
+    downloadFile(content, 'koog-conversation.txt', 'text/plain');
+}
+
+function exportConversationCSV() {
+    const messages = document.querySelectorAll('.message');
+    if (messages.length === 0) {
+        addMessage('system', 'No conversation to export');
+        return;
+    }
+    
+    let content = 'Timestamp,Type,Message\n';
+    
+    messages.forEach(msg => {
+        const type = msg.classList.contains('user') ? 'User' : 
+                    msg.classList.contains('assistant') ? 'Assistant' : 'System';
+        const timestamp = msg.querySelector('.timestamp').textContent;
+        const text = msg.querySelector('div').textContent.replace(/"/g, '""');
+        
+        content += `"${timestamp}","${type}","${text}"\n`;
+    });
+    
+    downloadFile(content, 'koog-conversation.csv', 'text/csv');
+}
+
+function downloadFile(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Enhanced Chat Controls
+function scrollToTop() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = 0;
+}
+
+function scrollToBottom() {
+    const chatMessages = document.getElementById('chatMessages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function toggleAutoScroll() {
+    autoScroll = !autoScroll;
+    const btn = document.getElementById('autoScrollBtn');
+    btn.textContent = autoScroll ? '📌' : '📌';
+    btn.style.opacity = autoScroll ? '1' : '0.5';
+}
+
+// Input Enhancement Functions
+function insertCodeBlock() {
+    const input = document.getElementById('messageInput');
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    const before = text.substring(0, start);
+    const selected = text.substring(start, end);
+    const after = text.substring(end);
+    
+    const codeBlock = selected ? `\`\`\`\n${selected}\n\`\`\`` : '```\n\n```';
+    input.value = before + codeBlock + after;
+    input.focus();
+    input.setSelectionRange(start + 3, start + 3 + (selected ? selected.length : 0));
+}
+
+function insertTable() {
+    const input = document.getElementById('messageInput');
+    const start = input.selectionStart;
+    const text = input.value;
+    const before = text.substring(0, start);
+    const after = text.substring(start);
+    
+    const table = `\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Row 1    | Data 1   | Data 2   |\n| Row 2    | Data 3   | Data 4   |\n`;
+    input.value = before + table + after;
+    input.focus();
+    input.setSelectionRange(start + table.length, start + table.length);
+}
+
+function clearInput() {
+    document.getElementById('messageInput').value = '';
+    document.getElementById('messageInput').focus();
+}
+
+// File Upload Function
+function uploadFile() {
+    const fileInput = document.getElementById('fileUpload');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        addMessage('error', 'Please select a file to upload');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const content = e.target.result;
+        const filename = file.name;
+        
+        // Send file content to AI for processing
+        addMessage('user', `Uploaded file: ${filename}\n\n${content}`);
+        
+        // Process with AI
+        processUploadedFile(filename, content);
+    };
+    
+    reader.readAsText(file);
+}
+
+function processUploadedFile(filename, content) {
+    const loadingId = addLoadingMessage();
+    
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            message: `Please analyze this file: ${filename}\n\n${content}` 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        removeLoadingMessage(loadingId);
+        addMessage('assistant', data.response);
+        updateMemoryStatus(data.memorySize);
+    })
+    .catch(error => {
+        removeLoadingMessage(loadingId);
+        addMessage('error', 'Error processing file: ' + error.message);
+    });
+}
+
+// Settings Management
+function loadSettings() {
+    const saved = localStorage.getItem('koogSettings');
+    if (saved) {
+        settings = { ...settings, ...JSON.parse(saved) };
+    }
+    
+    // Apply settings to UI
+    document.getElementById('autoSave').checked = settings.autoSave;
+    document.getElementById('showTimestamps').checked = settings.showTimestamps;
+    document.getElementById('maxMemorySize').value = settings.maxMemorySize;
+    document.getElementById('responseSpeed').value = settings.responseSpeed;
+}
+
+function saveSettings() {
+    settings.autoSave = document.getElementById('autoSave').checked;
+    settings.showTimestamps = document.getElementById('showTimestamps').checked;
+    settings.maxMemorySize = parseInt(document.getElementById('maxMemorySize').value);
+    settings.responseSpeed = document.getElementById('responseSpeed').value;
+    
+    localStorage.setItem('koogSettings', JSON.stringify(settings));
+    addMessage('system', 'Settings saved');
+}
+
+// Enhanced Message Display
+function addMessage(type, content) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}`;
+    
+    const timestamp = settings.showTimestamps ? new Date().toLocaleTimeString() : '';
+    
+    // Enhanced content processing
+    const processedContent = processMessageContent(content);
+    
+    messageDiv.innerHTML = `
+        <div>${processedContent}</div>
+        ${timestamp ? `<span class="timestamp">${timestamp}</span>` : ''}
+    `;
+    
+    messagesDiv.appendChild(messageDiv);
+    
+    if (autoScroll) {
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    // Auto-save if enabled
+    if (settings.autoSave && type === 'assistant') {
+        setTimeout(saveConversation, 1000);
+    }
+}
+
+function processMessageContent(content) {
+    // Convert markdown-like formatting
+    let processed = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+        .replace(/\n/g, '<br>');
+    
+    return processed;
+}
+
+// Enhanced Keyboard Shortcuts
+document.addEventListener('keydown', function(e) {
+    const input = document.getElementById('messageInput');
+    
+    if (e.target === input) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+    
+    // Global shortcuts
+    if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+            case 's':
+                e.preventDefault();
+                saveConversation();
+                break;
+            case 'l':
+                e.preventDefault();
+                loadConversationHistory();
+                break;
+            case 'k':
+                e.preventDefault();
+                clearMemory();
+                break;
+        }
+    }
+});
+
+// Initialize enhanced features
+document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+    loadConversationHistory();
+    
+    // Add event listeners for settings
+    document.getElementById('autoSave').addEventListener('change', saveSettings);
+    document.getElementById('showTimestamps').addEventListener('change', saveSettings);
+    document.getElementById('maxMemorySize').addEventListener('change', saveSettings);
+    document.getElementById('responseSpeed').addEventListener('change', saveSettings);
+    
+    // Add keyboard shortcut hints
+    addMessage('system', '💡 Keyboard shortcuts: Ctrl+S (Save), Ctrl+L (Load), Ctrl+K (Clear)');
+});
 
