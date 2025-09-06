@@ -1,6 +1,6 @@
 package dev.craftmind.agent.presentation.web.handler
 
-import dev.craftmind.agent.application.service.ChatApplicationService
+import dev.craftmind.agent.application.service.ChatApplicationServiceInterface
 import dev.craftmind.agent.application.dto.ChatRequest
 import dev.craftmind.agent.application.dto.ChatResponse
 import com.sun.net.httpserver.HttpHandler
@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets
 import java.time.Duration
 
 class ChatHandler(
-    private val chatService: ChatApplicationService
+    private val chatService: ChatApplicationServiceInterface
 ) : HttpHandler {
     
     override fun handle(exchange: HttpExchange) {

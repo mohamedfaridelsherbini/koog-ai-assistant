@@ -7,8 +7,8 @@ import java.time.LocalDateTime
 
 class ChatApplicationService(
     private val conversationService: ConversationServiceInterface
-) {
-    suspend fun sendMessage(request: ChatRequest): ChatResponse {
+) : ChatApplicationServiceInterface {
+    override suspend fun sendMessage(request: ChatRequest): ChatResponse {
         val response = conversationService.sendMessage(
             userMessage = request.message,
             model = request.model ?: "llama3.1:8b"
@@ -19,11 +19,11 @@ class ChatApplicationService(
         )
     }
     
-    fun clearMemory() {
+    override fun clearMemory() {
         conversationService.clearConversation()
     }
     
-    fun getMemorySize(): Int {
+    override fun getMemorySize(): Int {
         return conversationService.getConversationHistory().size
     }
 }
