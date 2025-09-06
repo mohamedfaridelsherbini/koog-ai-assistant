@@ -13,13 +13,13 @@ import java.time.Duration
 class OllamaClient(
     private val config: OllamaConfig,
     private val httpClient: HttpClient
-) {
+) : OllamaClientInterface {
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun chat(
+    override suspend fun chat(
         model: String,
         messages: List<ConversationEntry>,
-        systemPrompt: String? = null
+        systemPrompt: String?
     ): String {
         val requestBody = ChatRequest(
             model = model,
@@ -73,7 +73,7 @@ class OllamaClient(
         return fullContent.ifEmpty { "Sorry, I couldn't process that request." }
     }
 
-    suspend fun listModels(): List<String> {
+    override suspend fun listModels(): List<String> {
         val request = HttpRequest.newBuilder()
             .uri(URI.create("${config.baseUrl}/api/tags"))
             .GET()

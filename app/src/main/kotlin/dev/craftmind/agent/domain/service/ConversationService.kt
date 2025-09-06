@@ -2,11 +2,11 @@ package dev.craftmind.agent.domain.service
 
 import dev.craftmind.agent.domain.model.ConversationEntry
 import dev.craftmind.agent.domain.repository.ConversationRepository
-import dev.craftmind.agent.infrastructure.ollama.OllamaClient
+import dev.craftmind.agent.infrastructure.ollama.OllamaClientInterface
 import java.util.UUID
 
 class ConversationService(
-    private val ollamaClient: OllamaClient,
+    private val ollamaClient: OllamaClientInterface,
     private val conversationRepository: ConversationRepository,
     private val systemPrompt: String,
     private val maxMemorySize: Int
