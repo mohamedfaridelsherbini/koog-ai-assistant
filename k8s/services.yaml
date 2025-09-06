@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama-service
+  namespace: koog-ai
+  labels:
+    app.kubernetes.io/name: ollama
+    app.kubernetes.io/component: llm-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 11434
+    targetPort: 11434
+    protocol: TCP
+    name: http
+  selector:
+    app.kubernetes.io/name: ollama
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koog-ai-service
+  namespace: koog-ai
+  labels:
+    app.kubernetes.io/name: koog-ai-assistant
+    app.kubernetes.io/component: web-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app.kubernetes.io/name: koog-ai-assistant
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koog-ai-loadbalancer
+  namespace: koog-ai
+  labels:
+    app.kubernetes.io/name: koog-ai-assistant
+    app.kubernetes.io/component: web-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 8080
+    protocol: TCP
+    name: https
+  selector:
+    app.kubernetes.io/name: koog-ai-assistant

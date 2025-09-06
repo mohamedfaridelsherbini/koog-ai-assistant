@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: koog-ai-assistant
+  namespace: koog-ai
+  labels:
+    app.kubernetes.io/name: koog-ai-assistant
+    app.kubernetes.io/component: web-service
+    app.kubernetes.io/version: "1.0.0"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: koog-ai-assistant
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: koog-ai-assistant
+        app.kubernetes.io/component: web-service
+    spec:
+      containers:
+      - name: koog-ai-assistant
+        image: ghcr.io/mohamedfaridelsherbini/koog-ai-assistant:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: OLLAMA_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: koog-ai-config
+              key: OLLAMA_HOST
+        - name: WEB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: koog-ai-config
+              key: WEB_PORT
+        - name: MODEL_CACHE_TTL
+          valueFrom:
+            configMapKeyRef:
+              name: koog-ai-config
+              key: MODEL_CACHE_TTL
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: koog-ai-config
+              key: LOG_LEVEL
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: koog-ai-config
+              key: DEBUG
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: koog-ai-config
+              key: ENVIRONMENT
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 12

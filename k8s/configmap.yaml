@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: koog-ai-config
+  namespace: koog-ai
+  labels:
+    app.kubernetes.io/name: koog-ai-assistant
+    app.kubernetes.io/version: "1.0.0"
+data:
+  OLLAMA_HOST: "ollama-service:11434"
+  WEB_PORT: "8080"
+  MODEL_CACHE_TTL: "30"
+  LOG_LEVEL: "INFO"
+  DEBUG: "false"
+  # Environment specific settings
+  ENVIRONMENT: "production"
+  # Performance settings
+  MAX_CONCURRENT_REQUESTS: "100"
+  REQUEST_TIMEOUT: "300"
+  # Health check settings
+  HEALTH_CHECK_INTERVAL: "30"
+  HEALTH_CHECK_TIMEOUT: "10"
+  HEALTH_CHECK_RETRIES: "3"

@@ -1,0 +1,193 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'koog-ai-cluster'
+        replica: 'prometheus-0'
+
+    rule_files:
+      - "alert_rules.yml"
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - alertmanager:9093
+
+    scrape_configs:
+      # Prometheus itself
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # Kubernetes API server
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      # Kubernetes nodes
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+      # Kubernetes pods
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+
+      # Koog AI Assistant
+      - job_name: 'koog-ai-assistant'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - koog-ai
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: koog-ai-service
+          - source_labels: [__meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: http
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            target_label: kubernetes_service_name
+
+      # Ollama Service
+      - job_name: 'ollama'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - koog-ai
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: ollama-service
+          - source_labels: [__meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: http
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            target_label: kubernetes_service_name
+
+  alert_rules.yml: |
+    groups:
+      - name: koog-ai-alerts
+        rules:
+          - alert: KoogAIAssistantDown
+            expr: up{job="koog-ai-assistant"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Koog AI Assistant is down"
+              description: "Koog AI Assistant has been down for more than 1 minute."
+
+          - alert: KoogAIAssistantHighCPU
+            expr: rate(container_cpu_usage_seconds_total{pod=~"koog-ai-assistant-.*"}[5m]) > 0.8
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Koog AI Assistant high CPU usage"
+              description: "Koog AI Assistant CPU usage is above 80% for more than 5 minutes."
+
+          - alert: KoogAIAssistantHighMemory
+            expr: container_memory_usage_bytes{pod=~"koog-ai-assistant-.*"} / container_spec_memory_limit_bytes > 0.9
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Koog AI Assistant high memory usage"
+              description: "Koog AI Assistant memory usage is above 90% for more than 5 minutes."
+
+          - alert: OllamaDown
+            expr: up{job="ollama"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Ollama is down"
+              description: "Ollama service has been down for more than 1 minute."
+
+          - alert: OllamaHighCPU
+            expr: rate(container_cpu_usage_seconds_total{pod=~"ollama-.*"}[5m]) > 0.9
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Ollama high CPU usage"
+              description: "Ollama CPU usage is above 90% for more than 5 minutes."
+
+          - alert: OllamaHighMemory
+            expr: container_memory_usage_bytes{pod=~"ollama-.*"} / container_spec_memory_limit_bytes > 0.95
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Ollama high memory usage"
+              description: "Ollama memory usage is above 95% for more than 5 minutes."
+
+          - alert: PodCrashLooping
+            expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "Pod is crash looping"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is crash looping."
+
+          - alert: HighPodRestartRate
+            expr: rate(kube_pod_container_status_restarts_total[15m]) > 0.1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High pod restart rate"
+              description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has a high restart rate."
