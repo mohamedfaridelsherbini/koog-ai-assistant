@@ -10,11 +10,11 @@ class ConversationService(
     private val conversationRepository: ConversationRepository,
     private val systemPrompt: String,
     private val maxMemorySize: Int
-) {
+) : ConversationServiceInterface {
     
-    suspend fun sendMessage(
+    override suspend fun sendMessage(
         userMessage: String,
-        model: String = "llama3.1:8b"
+        model: String
     ): String {
         // Add user message to conversation
         val userEntry = ConversationEntry(
@@ -46,11 +46,11 @@ class ConversationService(
         return response
     }
     
-    fun getConversationHistory(): List<ConversationEntry> {
+    override fun getConversationHistory(): List<ConversationEntry> {
         return conversationRepository.getAllEntries()
     }
     
-    fun clearConversation() {
+    override fun clearConversation() {
         conversationRepository.clear()
     }
 }
