@@ -1,11 +1,11 @@
-# 🤖 Koog AI Assistant - Local Version
+# 🐳 Docker AI Agent
 
-A powerful AI chat system with modern web interface, running locally to avoid cloud costs.
+A powerful AI chat system running entirely in Docker with web interface and command-line support.
 
 ## ✨ Features
 
-- 🤖 **AI Chat** - Powered by multiple AI models (Llama, Gemma, Phi3, DeepSeek)
-- 🌐 **Modern Web Interface** - Beautiful 2025 UI/UX with Light/Dark/System themes
+- 🤖 **AI Chat** - Powered by Llama 3.2 running in Docker
+- 🌐 **Web Interface** - Beautiful, responsive web UI
 - 💬 **Command Line** - Interactive terminal chat
 - 🧠 **Memory** - Conversation context awareness
 - 📁 **File Operations** - Read, write, list, and save files
@@ -15,9 +15,9 @@ A powerful AI chat system with modern web interface, running locally to avoid cl
 - 🔧 **System Monitoring** - Real-time CPU, memory, disk, and network metrics
 - ⚡ **Performance Analytics** - Response times, throughput, error rates, and optimization recommendations
 - 🏥 **Health Monitoring** - Comprehensive system health checks with actionable recommendations
-- 💰 **Cost-Effective** - Runs locally, no cloud costs
+- 🔧 **Easy Setup** - One-command launcher
 
-## 🚀 Quick Start (Local Version)
+## 🚀 Quick Start
 
 ### Prerequisites
 - Docker installed and running
@@ -25,20 +25,22 @@ A powerful AI chat system with modern web interface, running locally to avoid cl
 
 ### Easy Run (Recommended)
 ```bash
-./start-local.sh
+./run.sh
 ```
 
 This will:
 1. ✅ Check Docker is running
 2. 🐳 Start Ollama container if needed
-3. 📥 Download AI models if needed
+3. 📥 Download AI model if needed
 4. 🔨 Build the application if needed
-5. 🌐 Start the web interface at http://localhost:8080
-
-### Stop the Application
-```bash
-./stop-local.sh
-```
+5. 🎯 Let you choose your mode:
+   - Web Interface (Browser)
+   - Command Line Chat
+   - Demo Mode
+   - Model Management Demo
+   - Multi-Model Switching Demo
+   - Advanced Conversation Demo
+   - System Monitoring Demo
 
 ### Manual Setup
 
@@ -164,26 +166,16 @@ When running in web mode, these endpoints are available:
 
 ```
 koog-agent-deep-research/
-├── 🚀 LOCAL DEVELOPMENT
-│   ├── start-local.sh              # Start local application
-│   ├── stop-local.sh               # Stop local application
-│   └── LOCAL_SETUP.md              # Local development guide
-│
-├── 📱 APPLICATION
-│   ├── app/
-│   │   ├── src/main/kotlin/        # Kotlin source code
-│   │   ├── src/main/resources/     # Web interface files
-│   │   └── build/libs/app.jar      # Compiled application
-│   └── gradle/                     # Gradle build system
-│
-├── 📚 DOCUMENTATION
-│   ├── README.md                   # Main documentation
-│   ├── NEXT_STEPS.md               # Next steps guide
-│   └── PROJECT_OVERVIEW.md         # Project overview
-│
-└── 📦 ARCHIVE
-    ├── archive/digitalocean/       # Archived cloud files
-    └── archive/unused/             # Unused files
+├── app/
+│   ├── src/main/kotlin/dev/craftmind/agent/
+│   │   ├── Main.kt                 # Main application
+│   │   ├── SimpleWebServer.kt      # Web server
+│   │   ├── DockerOllamaExecutor.kt # Ollama API client
+│   │   └── DockerAIAgent.kt        # AI agent logic
+│   └── src/main/resources/static/  # Web interface files
+├── run.sh                          # Easy launcher
+├── demo_web.sh                     # Web demo script
+└── README.md                       # This file
 ```
 
 ## 🔍 Troubleshooting

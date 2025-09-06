@@ -40,15 +40,15 @@ class ModelManager {
             
             data.models.forEach(model => {
                 const option = document.createElement('option');
-                option.value = model.name;
-                option.textContent = model.name;
+                option.value = model;
+                option.textContent = model;
                 select.appendChild(option);
             });
             
             // Auto-select first model
             if (data.models.length > 0) {
-                select.value = data.models[0].name;
-                this.selectModel(data.models[0].name);
+                select.value = data.models[0];
+                this.selectModel(data.models[0]);
             }
         })
         .catch(error => {
