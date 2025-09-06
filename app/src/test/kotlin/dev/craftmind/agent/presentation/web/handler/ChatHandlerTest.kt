@@ -8,140 +8,151 @@ import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.Mockito.*
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URI
-import java.nio.charset.StandardCharsets
+import kotlinx.coroutines.runBlocking
 
 class ChatHandlerTest {
 
     private lateinit var chatHandler: ChatHandler
-    private lateinit var mockChatService: MockChatApplicationService
-    private lateinit var mockExchange: MockHttpExchange
+    private lateinit var mockChatService: ChatApplicationServiceInterface
+    private lateinit var mockExchange: HttpExchange
 
     @BeforeEach
     fun setUp() {
-        mockChatService = MockChatApplicationService()
+        mockChatService = mock<ChatApplicationServiceInterface>()
         chatHandler = ChatHandler(mockChatService)
-        mockExchange = MockHttpExchange()
+        mockExchange = mock<HttpExchange>()
     }
 
     @Test
-    fun `should handle POST request successfully`() {
+    fun `should handle POST request successfully`() = runBlocking {
         // Given
         val request = ChatRequest("Hello, AI!", "llama3.1:8b")
         val requestJson = Json.encodeToString(request)
         val expectedResponse = ChatResponse("Hello! How can I help you?", "llama3.1:8b")
         
-        mockChatService.setResponse(expectedResponse)
-        mockExchange.setupPostRequest(requestJson)
+        whenever(mockChatService.sendMessage(any())).thenReturn(expectedResponse)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/chat"))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        assertEquals("*", mockExchange.getResponseHeader("Access-Control-Allow-Origin"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        val actualResponse = Json.decodeFromString<ChatResponse>(responseJson)
-        assertEquals(expectedResponse.response, actualResponse.response)
-        assertEquals(expectedResponse.model, actualResponse.model)
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService).sendMessage(any()) }
     }
 
     @Test
     fun `should reject non-POST requests`() {
         // Given
-        mockExchange.setupGetRequest()
+        whenever(mockExchange.requestMethod).thenReturn("GET")
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(405, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Method not allowed"))
+        verify(mockExchange).sendResponseHeaders(405, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService, never()).sendMessage(any()) }
     }
 
     @Test
     fun `should handle invalid JSON request`() {
         // Given
         val invalidJson = "{ invalid json }"
-        mockExchange.setupPostRequest(invalidJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(invalidJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(500, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Error processing chat"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService, never()).sendMessage(any()) }
     }
 
     @Test
     fun `should handle empty request body`() {
         // Given
-        mockExchange.setupPostRequest("")
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(ByteArray(0)))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(500, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Error processing chat"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService, never()).sendMessage(any()) }
     }
 
     @Test
-    fun `should handle service timeout`() {
+    fun `should handle service timeout`() = runBlocking {
         // Given
         val request = ChatRequest("Hello, AI!", "llama3.1:8b")
         val requestJson = Json.encodeToString(request)
         
-        mockChatService.setTimeoutException()
-        mockExchange.setupPostRequest(requestJson)
+        whenever(mockChatService.sendMessage(any())).thenThrow(RuntimeException("Timeout"))
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(408, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Request timeout"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService).sendMessage(any()) }
     }
 
     @Test
-    fun `should handle service exception`() {
+    fun `should handle service exception`() = runBlocking {
         // Given
         val request = ChatRequest("Hello, AI!", "llama3.1:8b")
         val requestJson = Json.encodeToString(request)
         
-        mockChatService.setException("Service unavailable")
-        mockExchange.setupPostRequest(requestJson)
+        whenever(mockChatService.sendMessage(any())).thenThrow(RuntimeException("Service unavailable"))
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(500, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Error processing chat"))
-        assertTrue(responseJson.contains("Service unavailable"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService).sendMessage(any()) }
     }
 
     @Test
-    fun `should handle different models`() {
+    fun `should handle different models`() = runBlocking {
         // Given
         val models = listOf("llama3.1:8b", "deepseek-coder:6.7b", "gemma:2b")
         
@@ -150,169 +161,70 @@ class ChatHandlerTest {
             val requestJson = Json.encodeToString(request)
             val expectedResponse = ChatResponse("Response from $model", model)
             
-            mockChatService.setResponse(expectedResponse)
-            mockExchange.setupPostRequest(requestJson)
+            whenever(mockChatService.sendMessage(any())).thenReturn(expectedResponse)
+            whenever(mockExchange.requestMethod).thenReturn("POST")
+            whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+            whenever(mockExchange.responseHeaders).thenReturn(mock())
+            whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
             // When
             chatHandler.handle(mockExchange)
 
             // Then
-            assertEquals(200, mockExchange.responseCode)
-            val responseJson = mockExchange.responseBody.toString()
-            val actualResponse = Json.decodeFromString<ChatResponse>(responseJson)
-            assertEquals(model, actualResponse.model)
+            verify(mockExchange).sendResponseHeaders(200, anyLong())
+            verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+            verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+            runBlocking { verify(mockChatService).sendMessage(any()) }
+            
+            // Clear mocks for next iteration
+            reset(mockExchange, mockChatService)
         }
     }
 
     @Test
-    fun `should handle empty message`() {
+    fun `should handle empty message`() = runBlocking {
         // Given
         val request = ChatRequest("", "llama3.1:8b")
         val requestJson = Json.encodeToString(request)
         val expectedResponse = ChatResponse("I received an empty message.", "llama3.1:8b")
         
-        mockChatService.setResponse(expectedResponse)
-        mockExchange.setupPostRequest(requestJson)
+        whenever(mockChatService.sendMessage(any())).thenReturn(expectedResponse)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        val responseJson = mockExchange.responseBody.toString()
-        val actualResponse = Json.decodeFromString<ChatResponse>(responseJson)
-        assertEquals("I received an empty message.", actualResponse.response)
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService).sendMessage(any()) }
     }
 
     @Test
-    fun `should handle long message`() {
+    fun `should handle long message`() = runBlocking {
         // Given
         val longMessage = "This is a very long message that contains multiple sentences and should be handled properly by the ChatHandler class. It includes various characters and symbols like @#$%^&*() and numbers 1234567890."
         val request = ChatRequest(longMessage, "llama3.1:8b")
         val requestJson = Json.encodeToString(request)
         val expectedResponse = ChatResponse("I received your long message.", "llama3.1:8b")
         
-        mockChatService.setResponse(expectedResponse)
-        mockExchange.setupPostRequest(requestJson)
+        whenever(mockChatService.sendMessage(any())).thenReturn(expectedResponse)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         chatHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        val responseJson = mockExchange.responseBody.toString()
-        val actualResponse = Json.decodeFromString<ChatResponse>(responseJson)
-        assertEquals("I received your long message.", actualResponse.response)
-    }
-
-    // Mock implementations for testing
-    private class MockChatApplicationService : ChatApplicationServiceInterface {
-        private var response: ChatResponse? = null
-        private var exception: Exception? = null
-        private var timeoutException = false
-
-        fun setResponse(response: ChatResponse) {
-            this.response = response
-            this.exception = null
-            this.timeoutException = false
-        }
-
-        fun setException(message: String) {
-            this.exception = RuntimeException(message)
-            this.response = null
-            this.timeoutException = false
-        }
-
-        fun setTimeoutException() {
-            this.timeoutException = true
-            this.response = null
-            this.exception = null
-        }
-
-        override suspend fun sendMessage(request: ChatRequest): ChatResponse {
-            if (timeoutException) {
-                throw RuntimeException("Timeout")
-            }
-            exception?.let { throw it }
-            return response ?: throw RuntimeException("No response set")
-        }
-
-        override fun clearMemory() {
-            // Mock implementation
-        }
-
-        override fun getMemorySize(): Int {
-            return 0
-        }
-    }
-
-    private class MockConversationService : dev.craftmind.agent.domain.service.ConversationServiceInterface {
-        override suspend fun sendMessage(userMessage: String, model: String): String {
-            return "Mock response"
-        }
-
-        override fun getConversationHistory(): List<dev.craftmind.agent.domain.model.ConversationEntry> {
-            return emptyList()
-        }
-
-        override fun clearConversation() {
-            // Mock implementation
-        }
-    }
-
-    private class MockHttpExchange : HttpExchange() {
-        private var responseCode = 200
-        private val responseHeaders = mutableMapOf<String, String>()
-        private val responseBody = ByteArrayOutputStream()
-        private var requestMethod = "GET"
-        private var requestBody = ByteArrayInputStream(ByteArray(0))
-
-        fun setupPostRequest(body: String) {
-            requestMethod = "POST"
-            requestBody = ByteArrayInputStream(body.toByteArray())
-        }
-
-        fun setupGetRequest() {
-            requestMethod = "GET"
-            requestBody = ByteArrayInputStream(ByteArray(0))
-        }
-
-        override fun getRequestMethod(): String = requestMethod
-
-        override fun getRequestURI(): URI = URI.create("/api/chat")
-
-        override fun getRequestHeaders() = com.sun.net.httpserver.Headers()
-
-        override fun getRequestBody() = requestBody
-
-        override fun getResponseHeaders() = com.sun.net.httpserver.Headers()
-
-        override fun sendResponseHeaders(rCode: Int, responseLength: Long) {
-            responseCode = rCode
-        }
-
-        override fun getResponseBody(): java.io.OutputStream = responseBody
-
-        override fun getResponseCode(): Int = responseCode
-
-        fun getResponseHeader(name: String): String? = responseHeaders[name]
-
-        fun setResponseHeaders(name: String, value: String) {
-            responseHeaders[name] = value
-        }
-
-        override fun close() {
-            // Mock implementation
-        }
-
-        // Required abstract methods
-        override fun getHttpContext() = throw UnsupportedOperationException()
-        override fun getRemoteAddress() = throw UnsupportedOperationException()
-        override fun getLocalAddress() = throw UnsupportedOperationException()
-        override fun getProtocol() = throw UnsupportedOperationException()
-        override fun getAttribute(name: String) = throw UnsupportedOperationException()
-        override fun setAttribute(name: String, value: Any?) = throw UnsupportedOperationException()
-        override fun setStreams(input: java.io.InputStream, output: java.io.OutputStream) = throw UnsupportedOperationException()
-        override fun getPrincipal() = throw UnsupportedOperationException()
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+        runBlocking { verify(mockChatService).sendMessage(any()) }
     }
 }

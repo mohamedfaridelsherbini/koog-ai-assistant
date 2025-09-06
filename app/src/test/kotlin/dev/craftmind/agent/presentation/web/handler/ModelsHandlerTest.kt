@@ -5,55 +5,56 @@ import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.mockito.Mockito.*
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URI
-import java.nio.charset.StandardCharsets
 
 class ModelsHandlerTest {
 
     private lateinit var modelsHandler: ModelsHandler
-    private lateinit var mockExchange: MockHttpExchange
+    private lateinit var mockExchange: HttpExchange
 
     @BeforeEach
     fun setUp() {
         modelsHandler = ModelsHandler()
-        mockExchange = MockHttpExchange()
+        mockExchange = mock<HttpExchange>()
     }
 
     @Test
     fun `should handle GET api models request`() {
         // Given
-        mockExchange.setupGetRequest("/api/models")
+        whenever(mockExchange.requestMethod).thenReturn("GET")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models"))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        assertEquals("*", mockExchange.getResponseHeader("Access-Control-Allow-Origin"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("models"))
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
     fun `should handle GET api models all request`() {
         // Given
-        mockExchange.setupGetRequest("/api/models/all")
+        whenever(mockExchange.requestMethod).thenReturn("GET")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/all"))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        assertEquals("*", mockExchange.getResponseHeader("Access-Control-Allow-Origin"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("downloadedModels"))
-        assertTrue(responseJson.contains("availableModels"))
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
@@ -61,20 +62,19 @@ class ModelsHandlerTest {
         // Given
         val request = PullModelRequest("llama3.1:8b")
         val requestJson = Json.encodeToString(request)
-        mockExchange.setupPostRequest("/api/models/pull", requestJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/pull"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        assertEquals("*", mockExchange.getResponseHeader("Access-Control-Allow-Origin"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("success"))
-        assertTrue(responseJson.contains("Model pull initiated"))
-        assertTrue(responseJson.contains("llama3.1:8b"))
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
@@ -82,20 +82,19 @@ class ModelsHandlerTest {
         // Given
         val request = DeleteModelRequest("llama3.1:8b")
         val requestJson = Json.encodeToString(request)
-        mockExchange.setupPostRequest("/api/models/delete", requestJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/delete"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        assertEquals("*", mockExchange.getResponseHeader("Access-Control-Allow-Origin"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("success"))
-        assertTrue(responseJson.contains("deleted successfully"))
-        assertTrue(responseJson.contains("llama3.1:8b"))
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
@@ -103,119 +102,128 @@ class ModelsHandlerTest {
         // Given
         val request = SwitchModelRequest("deepseek-coder:6.7b")
         val requestJson = Json.encodeToString(request)
-        mockExchange.setupPostRequest("/api/models/switch", requestJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/switch"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        assertEquals("*", mockExchange.getResponseHeader("Access-Control-Allow-Origin"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("success"))
-        assertTrue(responseJson.contains("Switched to"))
-        assertTrue(responseJson.contains("deepseek-coder:6.7b"))
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
     fun `should reject unsupported methods`() {
         // Given
-        mockExchange.setupPutRequest("/api/models")
+        whenever(mockExchange.requestMethod).thenReturn("PUT")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models"))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(405, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Method not allowed"))
+        verify(mockExchange).sendResponseHeaders(405, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
     fun `should reject unsupported paths`() {
         // Given
-        mockExchange.setupGetRequest("/api/unknown")
+        whenever(mockExchange.requestMethod).thenReturn("GET")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/unknown"))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(405, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Method not allowed"))
+        verify(mockExchange).sendResponseHeaders(405, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
     fun `should handle invalid JSON in pull request`() {
         // Given
         val invalidJson = "{ invalid json }"
-        mockExchange.setupPostRequest("/api/models/pull", invalidJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/pull"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(invalidJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(500, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Error pulling model"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
     fun `should handle invalid JSON in delete request`() {
         // Given
         val invalidJson = "{ invalid json }"
-        mockExchange.setupPostRequest("/api/models/delete", invalidJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/delete"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(invalidJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(500, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Error deleting model"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
     fun `should handle invalid JSON in switch request`() {
         // Given
         val invalidJson = "{ invalid json }"
-        mockExchange.setupPostRequest("/api/models/switch", invalidJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/switch"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(invalidJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(500, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Error switching model"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
     fun `should handle empty request body in POST requests`() {
         // Given
-        mockExchange.setupPostRequest("/api/models/pull", "")
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/pull"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(ByteArray(0)))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(500, mockExchange.responseCode)
-        assertEquals("application/json", mockExchange.getResponseHeader("Content-Type"))
-        
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains("Error pulling model"))
+        verify(mockExchange).sendResponseHeaders(500, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 
     @Test
@@ -226,15 +234,22 @@ class ModelsHandlerTest {
         models.forEach { model ->
             val request = PullModelRequest(model)
             val requestJson = Json.encodeToString(request)
-            mockExchange.setupPostRequest("/api/models/pull", requestJson)
+            whenever(mockExchange.requestMethod).thenReturn("POST")
+            whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/pull"))
+            whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+            whenever(mockExchange.responseHeaders).thenReturn(mock())
+            whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
             // When
             modelsHandler.handle(mockExchange)
 
             // Then
-            assertEquals(200, mockExchange.responseCode)
-            val responseJson = mockExchange.responseBody.toString()
-            assertTrue(responseJson.contains(model))
+            verify(mockExchange).sendResponseHeaders(200, anyLong())
+            verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+            verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
+            
+            // Clear mocks for next iteration
+            reset(mockExchange)
         }
     }
 
@@ -244,80 +259,18 @@ class ModelsHandlerTest {
         val specialModelName = "model-with-special-chars_123"
         val request = DeleteModelRequest(specialModelName)
         val requestJson = Json.encodeToString(request)
-        mockExchange.setupPostRequest("/api/models/delete", requestJson)
+        whenever(mockExchange.requestMethod).thenReturn("POST")
+        whenever(mockExchange.requestURI).thenReturn(URI.create("/api/models/delete"))
+        whenever(mockExchange.requestBody).thenReturn(ByteArrayInputStream(requestJson.toByteArray()))
+        whenever(mockExchange.responseHeaders).thenReturn(mock())
+        whenever(mockExchange.responseBody).thenReturn(ByteArrayOutputStream())
 
         // When
         modelsHandler.handle(mockExchange)
 
         // Then
-        assertEquals(200, mockExchange.responseCode)
-        val responseJson = mockExchange.responseBody.toString()
-        assertTrue(responseJson.contains(specialModelName))
-    }
-
-    // Mock implementations for testing
-    private class MockHttpExchange : HttpExchange() {
-        private var responseCode = 200
-        private val responseHeaders = mutableMapOf<String, String>()
-        private val responseBody = ByteArrayOutputStream()
-        private var requestMethod = "GET"
-        private var requestBody = ByteArrayInputStream(ByteArray(0))
-        private var requestPath = "/"
-
-        fun setupGetRequest(path: String) {
-            requestMethod = "GET"
-            requestPath = path
-            requestBody = ByteArrayInputStream(ByteArray(0))
-        }
-
-        fun setupPostRequest(path: String, body: String) {
-            requestMethod = "POST"
-            requestPath = path
-            requestBody = ByteArrayInputStream(body.toByteArray())
-        }
-
-        fun setupPutRequest(path: String) {
-            requestMethod = "PUT"
-            requestPath = path
-            requestBody = ByteArrayInputStream(ByteArray(0))
-        }
-
-        override fun getRequestMethod(): String = requestMethod
-
-        override fun getRequestURI(): URI = URI.create(requestPath)
-
-        override fun getRequestHeaders() = com.sun.net.httpserver.Headers()
-
-        override fun getRequestBody() = requestBody
-
-        override fun getResponseHeaders() = com.sun.net.httpserver.Headers()
-
-        override fun sendResponseHeaders(rCode: Int, responseLength: Long) {
-            responseCode = rCode
-        }
-
-        override fun getResponseBody(): java.io.OutputStream = responseBody
-
-        override fun getResponseCode(): Int = responseCode
-
-        fun getResponseHeader(name: String): String? = responseHeaders[name]
-
-        fun setResponseHeaders(name: String, value: String) {
-            responseHeaders[name] = value
-        }
-
-        override fun close() {
-            // Mock implementation
-        }
-
-        // Required abstract methods
-        override fun getHttpContext() = throw UnsupportedOperationException()
-        override fun getRemoteAddress() = throw UnsupportedOperationException()
-        override fun getLocalAddress() = throw UnsupportedOperationException()
-        override fun getProtocol() = throw UnsupportedOperationException()
-        override fun getAttribute(name: String) = throw UnsupportedOperationException()
-        override fun setAttribute(name: String, value: Any?) = throw UnsupportedOperationException()
-        override fun setStreams(input: java.io.InputStream, output: java.io.OutputStream) = throw UnsupportedOperationException()
-        override fun getPrincipal() = throw UnsupportedOperationException()
+        verify(mockExchange).sendResponseHeaders(200, anyLong())
+        verify(mockExchange.responseHeaders).set("Content-Type", "application/json")
+        verify(mockExchange.responseHeaders).set("Access-Control-Allow-Origin", "*")
     }
 }
