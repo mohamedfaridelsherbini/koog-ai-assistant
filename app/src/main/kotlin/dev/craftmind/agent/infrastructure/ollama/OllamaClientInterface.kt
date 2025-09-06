@@ -10,4 +10,8 @@ interface OllamaClientInterface {
     ): String
     
     suspend fun listModels(): List<String>
+    
+    suspend fun pullModel(modelName: String)
+    
+    suspend fun deleteModel(modelName: String)
 }

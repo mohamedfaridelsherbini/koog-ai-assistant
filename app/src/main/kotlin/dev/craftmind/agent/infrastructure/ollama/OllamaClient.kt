@@ -89,6 +89,36 @@ class OllamaClient(
         val modelsResponse = json.decodeFromString<ModelsResponse>(response.body())
         return modelsResponse.models.map { it.name }
     }
+    
+    override suspend fun pullModel(modelName: String) {
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create("${config.baseUrl}/api/pull"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(json.encodeToString(PullRequest(modelName))))
+            .timeout(config.connectTimeout)
+            .build()
+
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        
+        if (response.statusCode() != 200) {
+            throw RuntimeException("Failed to pull model $modelName: ${response.statusCode()}")
+        }
+    }
+    
+    override suspend fun deleteModel(modelName: String) {
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create("${config.baseUrl}/api/delete"))
+            .header("Content-Type", "application/json")
+            .method("DELETE", HttpRequest.BodyPublishers.ofString(json.encodeToString(DeleteRequest(modelName))))
+            .timeout(config.connectTimeout)
+            .build()
+
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+        
+        if (response.statusCode() != 200) {
+            throw RuntimeException("Failed to delete model $modelName: ${response.statusCode()}")
+        }
+    }
 }
 
 @Serializable
@@ -120,4 +150,14 @@ data class ModelsResponse(
 data class ModelInfo(
     val name: String,
     val model: String
+)
+
+@Serializable
+data class PullRequest(
+    val name: String
+)
+
+@Serializable
+data class DeleteRequest(
+    val name: String
 )

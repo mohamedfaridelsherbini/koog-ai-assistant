@@ -232,6 +232,14 @@ class ConversationServiceTest {
         override suspend fun listModels(): List<String> {
             return listOf("llama3.1:8b", "deepseek-coder:6.7b")
         }
+        
+        override suspend fun pullModel(modelName: String) {
+            // Mock implementation - do nothing
+        }
+        
+        override suspend fun deleteModel(modelName: String) {
+            // Mock implementation - do nothing
+        }
     }
 
     private class MockConversationRepository : ConversationRepository {

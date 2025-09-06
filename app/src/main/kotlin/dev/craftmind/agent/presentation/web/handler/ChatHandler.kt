@@ -53,7 +53,7 @@ class ChatHandler(
     }
     
     private fun sendError(exchange: HttpExchange, statusCode: Int, message: String) {
-        val errorResponse = ErrorResponse(message)
+        val errorResponse = mapOf("error" to message)
         exchange.responseHeaders.set("Content-Type", "application/json")
         exchange.responseHeaders.set("Access-Control-Allow-Origin", "*")
         exchange.sendResponseHeaders(statusCode, 0)
@@ -62,8 +62,3 @@ class ChatHandler(
         }
     }
 }
-
-@Serializable
-data class ErrorResponse(
-    val error: String
-)
