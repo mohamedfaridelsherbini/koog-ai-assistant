@@ -1,0 +1,194 @@
+/* Theme-specific styles */
+
+/* Dark Theme Overrides - Custom Violet Theme */
+[data-theme="dark"] {
+    /* Override any specific dark theme styles */
+}
+
+[data-theme="dark"] .message.user {
+    background: #33005d;
+}
+
+[data-theme="dark"] .message.assistant {
+    background: var(--slate-gray);
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .theme-toggle {
+    background: var(--slate-gray);
+    color: #f9fafb;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .models-btn {
+    background: var(--slate-gray);
+    color: #f9fafb;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .modal-content {
+    background: var(--dark-bg);
+    border: 1px solid var(--slate-gray);
+}
+
+[data-theme="dark"] .model-item:hover {
+    background: var(--slate-gray);
+}
+
+[data-theme="dark"] .input {
+    background: #33005d;
+    border-top-color: #2a004a;
+}
+
+[data-theme="dark"] .header-controls select {
+    background: var(--slate-gray);
+    color: #f9fafb;
+    border-color: #475569;
+}
+
+[data-theme="dark"] .header-controls select option {
+    background: var(--slate-gray);
+    color: #f9fafb;
+}
+
+/* Light Theme Overrides - Custom Violet Theme */
+[data-theme="light"] {
+    /* Override any specific light theme styles */
+}
+
+[data-theme="light"] .message.user {
+    background: var(--slate-gray);
+    color: white;
+}
+
+[data-theme="light"] .message.assistant {
+    background: #ffffff;
+    color: var(--slate-gray);
+    border: 1px solid #d1d5db;
+}
+
+[data-theme="light"] .theme-toggle {
+    background: #ffffff;
+    color: var(--slate-gray);
+    border-color: #d1d5db;
+}
+
+[data-theme="light"] .models-btn {
+    background: #ffffff;
+    color: var(--slate-gray);
+    border-color: #d1d5db;
+}
+
+[data-theme="light"] .attachment-btn,
+[data-theme="light"] .mic-btn {
+    background: #ffffff;
+    color: var(--slate-gray);
+}
+
+[data-theme="light"] .attachment-btn:hover,
+[data-theme="light"] .mic-btn:hover {
+    background: #f3f4f6;
+    color: var(--slate-gray);
+}
+
+[data-theme="light"] .modal-content {
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+}
+
+[data-theme="light"] .model-item:hover {
+    background: var(--light-gray);
+}
+
+[data-theme="light"] .input-group {
+    background: #ffffff;
+    border-color: #d1d5db;
+}
+
+[data-theme="light"] .input-group input {
+    color: var(--slate-gray);
+}
+
+[data-theme="light"] .input-group input::placeholder {
+    color: #64748b;
+}
+
+[data-theme="light"] .input {
+    background: var(--light-gray);
+    border-top-color: #d1d5db;
+}
+
+[data-theme="light"] .header-controls select {
+    background: #ffffff;
+    color: var(--slate-gray);
+    border-color: #d1d5db;
+}
+
+[data-theme="light"] .header-controls select option {
+    background: #ffffff;
+    color: var(--slate-gray);
+}
+
+/* Theme Transition Effects */
+.theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Theme-specific code block backgrounds */
+[data-theme="dark"] .message pre {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+[data-theme="light"] .message pre {
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+/* Theme-specific syntax highlighting overrides */
+[data-theme="dark"] .message pre .token.comment,
+[data-theme="dark"] .message pre .token.prolog,
+[data-theme="dark"] .message pre .token.doctype,
+[data-theme="dark"] .message pre .token.cdata {
+    color: #9ca3af;
+}
+
+[data-theme="light"] .message pre .token.comment,
+[data-theme="light"] .message pre .token.prolog,
+[data-theme="light"] .message pre .token.doctype,
+[data-theme="light"] .message pre .token.cdata {
+    color: #6b7280;
+}
+
+[data-theme="dark"] .message pre .token.punctuation {
+    color: #d1d5db;
+}
+
+[data-theme="light"] .message pre .token.punctuation {
+    color: #9ca3af;
+}
+
+/* Theme-specific scrollbar - Custom Violet Theme */
+[data-theme="dark"] #chatMessages::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+}
+
+[data-theme="dark"] #chatMessages::-webkit-scrollbar-thumb {
+    background: var(--slate-gray);
+}
+
+[data-theme="dark"] #chatMessages::-webkit-scrollbar-thumb:hover {
+    background: #33005d;
+}
+
+[data-theme="light"] #chatMessages::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+[data-theme="light"] #chatMessages::-webkit-scrollbar-thumb {
+    background: var(--light-gray);
+}
+
+[data-theme="light"] #chatMessages::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-violet);
+}

@@ -4,6 +4,8 @@ import com.sun.net.httpserver.HttpServer
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpExchange
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
@@ -187,7 +189,12 @@ class SimpleWebServer(private val dockerAgent: DockerAIAgent) {
                 val requestBody = exchange.requestBody.readAllBytes().toString(StandardCharsets.UTF_8)
                 val request = Json.decodeFromString<ChatRequest>(requestBody)
                 
-                val response = runBlocking { agent.run(request.message) }
+                // Add timeout to prevent hanging
+                val response = runBlocking {
+                    withTimeout(30000) { // 30 second timeout
+                        agent.run(request.message)
+                    }
+                }
                 val chatResponse = ChatResponse(
                     response = response,
                     timestamp = LocalDateTime.now().toString(),
@@ -195,6 +202,8 @@ class SimpleWebServer(private val dockerAgent: DockerAIAgent) {
                 )
                 
                 sendJsonResponse(exchange, chatResponse)
+            } catch (e: TimeoutCancellationException) {
+                sendError(exchange, 408, "Request timeout - AI model took too long to respond")
             } catch (e: Exception) {
                 sendError(exchange, 500, "Error processing chat: ${e.message}")
             }

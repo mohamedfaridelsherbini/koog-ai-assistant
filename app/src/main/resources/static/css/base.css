@@ -1,0 +1,120 @@
+/* Base styles and CSS variables */
+:root {
+    /* Custom color palette */
+    --primary-violet: #6b21a8;
+    --light-gray: #f3f4f6;
+    --slate-gray: #334155;
+    --dark-bg: #0f172a;
+    
+    /* Light theme colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: var(--light-gray);
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --border-color: #dee2e6;
+    --accent-color: var(--primary-violet);
+    --accent-hover: #5b1a96;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+}
+
+/* Dark theme colors - Custom Dark Purple Theme */
+[data-theme="dark"] {
+    --bg-primary: var(--dark-bg);
+    --bg-secondary: var(--slate-gray);
+    --bg-chat: #1e293b;
+    --bg-header: #33005d;
+    --bg-input: #33005d;
+    --text-primary: #ffffff;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #475569;
+    --accent-color: #33005d;
+    --accent-hover: #2a004a;
+    --user-message-bg: #33005d;
+    --assistant-message-bg: var(--slate-gray);
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    --online-indicator: #10b981;
+}
+
+/* Light theme colors - Light Gray Theme */
+[data-theme="light"] {
+    --bg-primary: var(--light-gray);
+    --bg-secondary: #e2e8f0;
+    --bg-chat: var(--light-gray);
+    --bg-header: var(--light-gray);
+    --bg-input: var(--light-gray);
+    --text-primary: var(--slate-gray);
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border-color: #d1d5db;
+    --accent-color: var(--slate-gray);
+    --accent-hover: #1e293b;
+    --user-message-bg: var(--slate-gray);
+    --assistant-message-bg: #ffffff;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --danger-color: #dc2626;
+    --info-color: #0284c7;
+    --online-indicator: #059669;
+}
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden; /* Prevents body from scrolling */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+}
+
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+
+p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+/* Utility classes */
+.hidden { display: none !important; }
+.loading { opacity: 0.6; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* Focus styles */
+button:focus,
+input:focus,
+select:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

@@ -1,0 +1,236 @@
+/* Syntax highlighting and code formatting styles */
+
+/* Message formatting styles */
+.message strong {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.message em {
+    font-style: italic;
+    color: var(--text-primary);
+}
+
+.message code {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.message ul, .message ol {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.message li {
+    margin: 5px 0;
+    line-height: 1.4;
+}
+
+.message ul {
+    list-style-type: disc;
+}
+
+.message ol {
+    list-style-type: decimal;
+}
+
+/* Rich paragraph styling */
+.message p {
+    margin: 0 0 12px 0;
+    line-height: 1.6;
+}
+
+.message p:last-child {
+    margin-bottom: 0;
+}
+
+.message p + p {
+    margin-top: 16px;
+}
+
+/* Code blocks with syntax highlighting */
+.message pre {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    overflow-x: auto;
+    margin: 12px 0;
+    white-space: pre;
+    word-wrap: normal;
+}
+
+.message pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-size: inherit;
+    white-space: pre;
+    word-wrap: normal;
+}
+
+/* Prism.js theme overrides for dark/light mode */
+[data-theme="dark"] .message pre {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+[data-theme="light"] .message pre {
+    background: #f7fafc;
+    color: #2d3748;
+}
+
+/* Prism.js syntax highlighting overrides */
+.message pre code[class*="language-"] {
+    color: inherit;
+}
+
+/* Ensure Prism.js tokens inherit our theme colors */
+.message pre .token.comment,
+.message pre .token.prolog,
+.message pre .token.doctype,
+.message pre .token.cdata {
+    color: #6a7280;
+}
+
+.message pre .token.punctuation {
+    color: #9ca3af;
+}
+
+.message pre .token.property,
+.message pre .token.tag,
+.message pre .token.boolean,
+.message pre .token.number,
+.message pre .token.constant,
+.message pre .token.symbol,
+.message pre .token.deleted {
+    color: #f59e0b;
+}
+
+.message pre .token.selector,
+.message pre .token.attr-name,
+.message pre .token.string,
+.message pre .token.char,
+.message pre .token.builtin,
+.message pre .token.inserted {
+    color: #10b981;
+}
+
+.message pre .token.operator,
+.message pre .token.entity,
+.message pre .token.url,
+.message pre .language-css .token.string,
+.message pre .style .token.string {
+    color: #3b82f6;
+}
+
+.message pre .token.atrule,
+.message pre .token.attr-value,
+.message pre .token.keyword {
+    color: #8b5cf6;
+}
+
+.message pre .token.function,
+.message pre .token.class-name {
+    color: #f97316;
+}
+
+.message pre .token.regex,
+.message pre .token.important,
+.message pre .token.variable {
+    color: #ef4444;
+}
+
+/* Language-specific syntax highlighting */
+.message pre code.language-python { color: #3776ab; }
+.message pre code.language-javascript { color: #f7df1e; }
+.message pre code.language-typescript { color: #3178c6; }
+.message pre code.language-java { color: #ed8b00; }
+.message pre code.language-kotlin { color: #7f52ff; }
+.message pre code.language-cpp { color: #00599c; }
+.message pre code.language-c { color: #a8b9cc; }
+.message pre code.language-csharp { color: #239120; }
+.message pre code.language-go { color: #00add8; }
+.message pre code.language-rust { color: #dea584; }
+.message pre code.language-php { color: #777bb4; }
+.message pre code.language-ruby { color: #cc342d; }
+.message pre code.language-swift { color: #fa7343; }
+.message pre code.language-sql { color: #336791; }
+.message pre code.language-html { color: #e34c26; }
+.message pre code.language-css { color: #1572b6; }
+.message pre code.language-json { color: #000000; }
+.message pre code.language-xml { color: #ff6600; }
+.message pre code.language-yaml { color: #cb171e; }
+.message pre code.language-bash { color: #4eaa25; }
+.message pre code.language-shell { color: #4eaa25; }
+.message pre code.language-dockerfile { color: #2496ed; }
+.message pre code.language-markdown { color: #083fa1; }
+.message pre code.language-mysql { color: #4479a1; }
+.message pre code.language-postgresql { color: #336791; }
+.message pre code.language-sqlite { color: #003b57; }
+.message pre code.language-mongodb { color: #47a248; }
+.message pre code.language-redis { color: #dc382d; }
+.message pre code.language-docker { color: #2496ed; }
+.message pre code.language-kubernetes { color: #326ce5; }
+.message pre code.language-terraform { color: #623ce4; }
+.message pre code.language-ansible { color: #ee0000; }
+.message pre code.language-powershell { color: #012456; }
+.message pre code.language-batch { color: #c1c1c1; }
+.message pre code.language-vb { color: #945db7; }
+.message pre code.language-vbnet { color: #945db7; }
+.message pre code.language-fsharp { color: #378bca; }
+.message pre code.language-scala { color: #dc322f; }
+.message pre code.language-clojure { color: #5881d8; }
+.message pre code.language-haskell { color: #5d4f85; }
+.message pre code.language-elm { color: #60b5cc; }
+.message pre code.language-ocaml { color: #ec6813; }
+.message pre code.language-erlang { color: #a90533; }
+.message pre code.language-elixir { color: #4e2a8e; }
+.message pre code.language-lua { color: #000080; }
+.message pre code.language-perl { color: #39457e; }
+.message pre code.language-r { color: #276dc3; }
+.message pre code.language-matlab { color: #e16737; }
+.message pre code.language-octave { color: #0790c3; }
+.message pre code.language-julia { color: #9558b2; }
+.message pre code.language-dart { color: #0175c2; }
+.message pre code.language-flutter { color: #02569b; }
+.message pre code.language-react { color: #61dafb; }
+.message pre code.language-vue { color: #4fc08d; }
+.message pre code.language-angular { color: #dd0031; }
+.message pre code.language-svelte { color: #ff3e00; }
+.message pre code.language-solid { color: #2c4f7c; }
+.message pre code.language-lit { color: #324fff; }
+.message pre code.language-stencil { color: #233447; }
+.message pre code.language-alpine { color: #8cc8ff; }
+.message pre code.language-htmx { color: #1f2937; }
+.message pre code.language-astro { color: #ff5d01; }
+.message pre code.language-sveltekit { color: #ff3e00; }
+.message pre code.language-nextjs { color: #000000; }
+.message pre code.language-nuxt { color: #00dc82; }
+.message pre code.language-gatsby { color: #663399; }
+.message pre code.language-remix { color: #000000; }
+.message pre code.language-solidstart { color: #2c4f7c; }
+.message pre code.language-qwik { color: #ac7ef4; }
+.message pre code.language-marko { color: #2592ff; }
+.message pre code.language-mithril { color: #ff6b35; }
+.message pre code.language-preact { color: #673ab8; }
+.message pre code.language-inferno { color: #ff6600; }
+.message pre code.language-riot { color: #c40233; }
+.message pre code.language-polymer { color: #ff4470; }
+
+/* Generic language fallback */
+.message pre code[class*="language-"] {
+    color: var(--text-secondary);
+}
